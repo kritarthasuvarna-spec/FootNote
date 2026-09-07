@@ -80,7 +80,7 @@ public static class StorageRouter
 
         if (ReferenceEquals(routed, Sidecar)) EnsureCloudRootReadme(filePath);
 
-        NotesBackup.RecordSave(filePath, history);
+        ProFeatures.Current.RecordSave(filePath, history);
     }
 
     /// <summary>
@@ -170,7 +170,7 @@ public static class StorageRouter
     /// The backup mirror keeps the note (marked deleted) — that's the point.</summary>
     public static void Delete(string filePath)
     {
-        NotesBackup.RecordDelete(filePath);
+        ProFeatures.Current.RecordDelete(filePath);
         Ads.Delete(filePath);
         Sidecar.Delete(filePath);
     }

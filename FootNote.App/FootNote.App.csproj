@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
@@ -12,10 +13,21 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyTitle>FootNote</AssemblyTitle>
     <Product>FootNote</Product>
+    <!-- FootNoteTier: Free (default, GitHub/Store-Free builds) or Pro
+         (Owner build today; Store-Paid once Store purchase is wired in).
+         Pass -p:FootNoteTier=Pro to build.ps1 to build a Pro binary. -->
+    <FootNoteTier Condition="'$(FootNoteTier)' == ''">Free</FootNoteTier>
+    <DefineConstants Condition="'$(FootNoteTier)' == 'Pro'">$(DefineConstants);FOOTNOTE_PRO</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FootNote.Core\FootNote.Core.csproj" />
+  </ItemGroup>
+
+  <!-- Only referenced for a Pro build, and only present at all in a local
+       working copy — FootNote.Pro is never committed to the public repo. -->
+  <ItemGroup Condition="'$(FootNoteTier)' == 'Pro'">
+    <ProjectReference Include="..\FootNote.Pro\FootNote.Pro.csproj" />
   </ItemGroup>
 
   <ItemGroup>

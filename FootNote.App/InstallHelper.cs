@@ -36,6 +36,7 @@ internal static class InstallHelper
         try
         {
             SetStartup(startWithWindows);
+            if (MsixEnvironment.IsPackaged) return; // MSIX already owns the Apps & Features entry and Start Menu tile
             WriteUninstallEntry();
             CreateStartMenuShortcut();
         }
@@ -61,8 +62,16 @@ internal static class InstallHelper
         catch { }
     }
 
+    /// <summary>The one entry point for toggling startup, at install time or
+    /// from the tray menu — routes to the packaged StartupTask API or the
+    /// unpackaged Run-key write depending on how this process is running.</summary>
     public static void SetStartup(bool enabled)
     {
+        if (MsixEnvironment.IsPackaged)
+        {
+            _ = MsixEnvironment.TrySetStartupAsync(enabled); // fire-and-forget, same as RegisterAll
+            return;
+        }
         try
         {
             using var key = Registry.CurrentUser.CreateSubKey(RunKeyPath);

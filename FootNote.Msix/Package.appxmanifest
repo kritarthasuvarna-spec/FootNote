@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap desktop rescap">
+
+  <!-- Identity is final — all three values copied verbatim from Partner
+       Center's own "Product Identity" page (see docs/Store_Identity.md,
+       the source of truth if anything here ever drifts). The reserved
+       Store title "Footnote: Comments for Files" is a listing field, not a
+       manifest one — DisplayName below is the shorter name actually shown
+       in the Start Menu/taskbar/window chrome. -->
+  <Identity
+    Name="Kritarth.FootnoteCommentsforFiles"
+    Publisher="CN=F94053C2-7FE8-4301-BE68-5CF640A88F39"
+    Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>Footnote: Comments for Files</DisplayName>
+    <PublisherDisplayName>Kritarth</PublisherDisplayName>
+    <Logo>Assets\Square150x150Logo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <Application Id="FootNote" Executable="FootNote.App.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="FootNote"
+        Description="A tiny sticky note for any file on Windows."
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square71x71Logo="Assets\Square71x71Logo.png" Square310x310Logo="Assets\Square310x310Logo.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#1A1A1C" />
+      </uap:VisualElements>
+      <Extensions>
+        <!-- TaskId must match MsixEnvironment.StartupTaskId exactly.
+             Enabled="false" here — Windows requires startup tasks to ship
+             disabled by default; the app requests enabling it at first run
+             via StartupTask.RequestEnableAsync() if the user's setting says
+             to start with Windows (matches "Launch FootNote when Windows
+             starts" in Setup / the Options panel today). The user can always
+             flip it from Task Manager's Startup tab regardless. -->
+        <desktop:Extension Category="windows.startupTask" Executable="FootNote.App.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="FootNoteStartup" Enabled="false" DisplayName="FootNote" />
+        </desktop:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <!--
+    runFullTrust: required for any classic Win32/WPF exe packaged via the
+    Desktop Bridge (EntryPoint="Windows.FullTrustApplication" above) — this
+    is not an elevated/admin capability, just what lets an MSIX host a
+    normal desktop process at all. No other capability is declared: no
+    shell extension, no COM registration, no broad file system access
+    requested (FootNote reads/writes only files the user already picked via
+    Explorer selection or the file picker, which doesn't need a capability
+    to access).
+  -->
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

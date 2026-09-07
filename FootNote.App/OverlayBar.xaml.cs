@@ -240,6 +240,11 @@ public partial class OverlayBar : Window
         EditBox.CaretIndex = EditBox.Text.Length; // cursor at end, per spec
         UpdateCounter();
 
+        // History only makes sense for a note that already exists, and only
+        // shows up at all on a build that has it.
+        HistoryButton.Visibility = existing is not null && ProFeatures.Current.Unlocked
+            ? Visibility.Visible : Visibility.Collapsed;
+
         _autoHide.Stop(); // an edit in progress never auto-hides
         SetNoActivate(false); // edit mode legitimately takes focus
         ShowWithSlide();
@@ -325,6 +330,11 @@ public partial class OverlayBar : Window
     }
 
     private void SaveButton_Click(object sender, RoutedEventArgs e) => DoSave();
+
+    private void HistoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (CurrentPath is not null) ProFeatures.Current.TryOpenHistory(CurrentPath);
+    }
 
     private void DiscardButton_Click(object sender, RoutedEventArgs e) => DoDiscard();
 

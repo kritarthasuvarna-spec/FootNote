@@ -23,7 +23,8 @@ internal sealed class TrayIcon : IDisposable
         menu.Items.Add(new ToolStripMenuItem("Settings…", null, (_, _) => onSettings()));
         menu.Items.Add(new ToolStripMenuItem("Show tutorial", null, (_, _) => onTutorial()));
         menu.Items.Add(new ToolStripMenuItem("What's New", null, (_, _) => onWhatsNew()));
-        menu.Items.Add(new ToolStripMenuItem("Recover Notes…", null, (_, _) => onRecoverNotes()));
+        if (ProFeatures.Current.Unlocked)
+            menu.Items.Add(new ToolStripMenuItem("Recover Notes…", null, (_, _) => onRecoverNotes()));
         menu.Items.Add(new ToolStripMenuItem("Open logs folder", null, (_, _) =>
         {
             try

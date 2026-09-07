@@ -2,3 +2,10 @@ bin/
 obj/
 dist/
 *.user
+*.pfx
+FootNote.Msix/_stage/
+tools/icongen/out/
+
+# Pro-tier code is never part of the public/MIT repo — see docs/brand or
+# ask before touching this. Kept only in the local working copy.
+FootNote.Pro/

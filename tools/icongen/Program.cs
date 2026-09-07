@@ -151,3 +151,76 @@ byte[] PngBytes(Bitmap bmp)
 }
 
 Console.WriteLine("done: " + Path.Combine(outDir, "footnote.ico"));
+
+// --- MSIX Store tile assets --------------------------------------------
+// Same mark, padded and centered rather than edge-to-edge — a bare
+// edge-to-edge icon looks cramped as a Start tile. Transparent background;
+// Windows composites its own tile background color behind it.
+Bitmap RenderTile(int w, int h, double fillFraction)
+{
+    var bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+    using var g = Graphics.FromImage(bmp);
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+
+    int iconSize = (int)(Math.Min(w, h) * fillFraction);
+    using var icon = RenderAt(256);
+    var dest = new Rectangle((w - iconSize) / 2, (h - iconSize) / 2, iconSize, iconSize);
+    g.DrawImage(icon, dest);
+    return bmp;
+}
+
+var storeAssets = new (string Name, int W, int H, double Fill)[]
+{
+    ("Square44x44Logo", 44, 44, 0.75),
+    ("Square44x44Logo.targetsize-24", 24, 24, 0.8),
+    ("Square71x71Logo", 71, 71, 0.6),
+    ("Square150x150Logo", 150, 150, 0.6),
+    ("Square310x310Logo", 310, 310, 0.6),
+    ("Wide310x150Logo", 310, 150, 0.45),
+    ("StoreLogo", 50, 50, 0.75),
+    ("SplashScreen", 620, 300, 0.35),
+};
+
+string storeDir = Path.Combine(outDir, "store-assets");
+Directory.CreateDirectory(storeDir);
+foreach (var a in storeAssets)
+{
+    using var tile = RenderTile(a.W, a.H, a.Fill);
+    tile.Save(Path.Combine(storeDir, $"{a.Name}.png"), ImageFormat.Png);
+}
+Console.WriteLine("done: " + storeDir + " (" + storeAssets.Length + " MSIX tile assets)");
+
+// --- Store listing logos (Poster art / Box art) -------------------------
+// Unlike the MSIX tiles above, these are marketing images shown on the
+// Store product page itself, not OS-composited tiles — Windows won't draw
+// a background behind them, so they need one baked in. Uses the splash
+// screen's dark background (#1A1A1C) from Package.appxmanifest.
+Bitmap RenderListingLogo(int w, int h, double fillFraction)
+{
+    var bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+    using var g = Graphics.FromImage(bmp);
+    g.SmoothingMode = SmoothingMode.AntiAlias;
+    g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+    g.Clear(ColorTranslator.FromHtml("#1A1A1C"));
+
+    int iconSize = (int)(Math.Min(w, h) * fillFraction);
+    using var icon = RenderAt(256);
+    var dest = new Rectangle((w - iconSize) / 2, (h - iconSize) / 2, iconSize, iconSize);
+    g.DrawImage(icon, dest);
+    return bmp;
+}
+
+var listingLogos = new (string Name, int W, int H)[]
+{
+    ("PosterArt-720x1080", 720, 1080),
+    ("PosterArt-1440x2160", 1440, 2160),
+    ("BoxArt-1080x1080", 1080, 1080),
+    ("BoxArt-2160x2160", 2160, 2160),
+};
+foreach (var a in listingLogos)
+{
+    using var logo = RenderListingLogo(a.W, a.H, 0.45);
+    logo.Save(Path.Combine(storeDir, $"{a.Name}.png"), ImageFormat.Png);
+}
+Console.WriteLine("done: " + storeDir + " (" + listingLogos.Length + " Store listing logos)");

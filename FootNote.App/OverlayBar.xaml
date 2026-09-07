@@ -189,6 +189,8 @@
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                         <TextBlock x:Name="CharCounter" Text="0/500" FontSize="11"
                                    Foreground="{StaticResource DimBrush}" VerticalAlignment="Center"/>
+                        <Button x:Name="HistoryButton" Content="History" Style="{StaticResource BarButton}"
+                                Visibility="Collapsed" Click="HistoryButton_Click"/>
                         <Button Content="Save" Style="{StaticResource AccentButton}" Click="SaveButton_Click"/>
                         <Button Content="Discard" Style="{StaticResource BarButton}" Click="DiscardButton_Click"/>
                     </StackPanel>

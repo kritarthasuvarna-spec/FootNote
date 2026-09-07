@@ -48,6 +48,18 @@
         <ScrollViewer Grid.Column="0" Grid.Row="0" VerticalScrollBarVisibility="Auto" Margin="0,0,16,0">
             <StackPanel>
 
+                <StackPanel x:Name="ProUpsellSection" Visibility="Collapsed">
+                    <TextBlock Text="APPEARANCE &amp; POSITION" Style="{StaticResource SectionHeader}" Margin="2,0,0,6"/>
+                    <Border Style="{StaticResource CardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Panel position, accent color, panel style, and ink bloom color are Pro features." TextWrapping="Wrap"/>
+                            <TextBlock Text="Unlock Full Version to customize how FootNote looks and where it docks."
+                                       Foreground="{StaticResource Dim}" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel x:Name="PositionSection">
                 <TextBlock Text="POSITION" Style="{StaticResource SectionHeader}" Margin="2,0,0,6"/>
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
@@ -61,7 +73,9 @@
                                   SelectedIndex="{Binding MonitorSelectedIndex}"/>
                     </StackPanel>
                 </Border>
+                </StackPanel>
 
+                <StackPanel x:Name="AppearanceSection">
                 <TextBlock Text="APPEARANCE" Style="{StaticResource SectionHeader}"/>
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
@@ -81,7 +95,9 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
+                </StackPanel>
 
+                <StackPanel x:Name="PanelSection">
                 <TextBlock Text="PANEL" Style="{StaticResource SectionHeader}"/>
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
@@ -137,6 +153,7 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
+                </StackPanel>
 
                 <TextBlock Text="BEHAVIOR" Style="{StaticResource SectionHeader}"/>
                 <Border Style="{StaticResource CardStyle}">

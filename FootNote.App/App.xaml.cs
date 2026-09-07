@@ -27,6 +27,18 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
+#if FOOTNOTE_PRO
+        ProFeatures.Current = FootNote.Pro.ProFeaturesFactory.Create();
+        // Blocking, not fire-and-forget: TrayIcon and Settings are built
+        // synchronously right after this and both read Unlocked immediately
+        // (e.g. to decide whether "Recover Notes…" belongs in the tray
+        // menu) — showing the wrong menu for a moment and then silently
+        // changing it under the user is worse than a brief startup delay.
+        // The Owner build's InitializeAsync completes instantly (no Store
+        // call); only the Store channel actually waits on anything here.
+        ProFeatures.Current.InitializeAsync().GetAwaiter().GetResult();
+#endif
+
         // Uninstall mode: this exe hosts the uninstall wizard (launched by the
         // Uninstall.exe stub) so the wizard UI costs no extra WPF payload.
         if (e.Args.Any(a => a.Equals("--uninstall", StringComparison.OrdinalIgnoreCase)))

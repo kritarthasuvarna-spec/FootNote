@@ -56,6 +56,16 @@ public partial class SettingsWindow : Window
         SettingsService.Instance.SettingsChanged += UpdatePreviewEdge;
         Closed += (_, _) => SettingsService.Instance.SettingsChanged -= UpdatePreviewEdge;
         UpdatePreviewEdge();
+
+        // Position/Appearance/Panel customization is Pro-only; Free shows a
+        // short upsell note in their place instead of the controls.
+        if (!FootNote.Core.ProFeatures.Current.Unlocked)
+        {
+            PositionSection.Visibility = Visibility.Collapsed;
+            AppearanceSection.Visibility = Visibility.Collapsed;
+            PanelSection.Visibility = Visibility.Collapsed;
+            ProUpsellSection.Visibility = Visibility.Visible;
+        }
     }
 
     private void UpdatePreviewEdge()
