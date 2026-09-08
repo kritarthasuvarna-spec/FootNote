@@ -65,6 +65,52 @@ public partial class SettingsWindow : Window
             AppearanceSection.Visibility = Visibility.Collapsed;
             PanelSection.Visibility = Visibility.Collapsed;
             ProUpsellSection.Visibility = Visibility.Visible;
+
+            switch (FootNote.Core.ProFeatures.Current.Method)
+            {
+                case FootNote.Core.UnlockMethod.StorePurchase:
+                    StoreUnlockPanel.Visibility = Visibility.Visible;
+                    break;
+                case FootNote.Core.UnlockMethod.LicenseKey:
+                    LicenseUnlockPanel.Visibility = Visibility.Visible;
+                    break;
+                // UnlockMethod.None: this is the plain Free build (no Pro
+                // project linked in at all) — nothing to buy, so neither
+                // panel applies. The upsell text above still explains what
+                // Pro would add.
+            }
+        }
+    }
+
+    private async void BuyButton_Click(object sender, RoutedEventArgs e)
+    {
+        BuyButton.IsEnabled = false;
+        StoreUnlockStatus.Text = "Opening the Store…";
+        bool unlocked = await FootNote.Core.ProFeatures.Current.TryPurchaseUnlockAsync();
+        if (unlocked)
+        {
+            StoreUnlockStatus.Text = "Unlocked! Restart FootNote to see the new options.";
+        }
+        else
+        {
+            StoreUnlockStatus.Text = "Purchase didn't complete.";
+            BuyButton.IsEnabled = true;
+        }
+    }
+
+    private async void ActivateButton_Click(object sender, RoutedEventArgs e)
+    {
+        ActivateButton.IsEnabled = false;
+        LicenseUnlockStatus.Text = "Checking license key…";
+        var (success, error) = await FootNote.Core.ProFeatures.Current.TryActivateLicenseAsync(LicenseKeyBox.Text);
+        if (success)
+        {
+            LicenseUnlockStatus.Text = "Unlocked! Restart FootNote to see the new options.";
+        }
+        else
+        {
+            LicenseUnlockStatus.Text = error ?? "Couldn't activate that key.";
+            ActivateButton.IsEnabled = true;
         }
     }
 

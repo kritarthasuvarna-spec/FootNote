@@ -1,17 +1,30 @@
 # FootNote release build: publishes self-contained binaries, produces the
 # distributable zip AND the Setup wizard exe.
 #
+# What to actually publish to GitHub Releases: -Tier Pro -Channel Direct.
+# That's the single build everyone downloads — free by default, unlocks in
+# Settings with a Lemon Squeezy license key. Plain -Tier Free (no Pro code
+# linked in at all) is kept only as a fallback/reference build, not what's
+# meant to ship. -Tier Pro -Channel Owner is the personal/sideload build,
+# always unlocked, never distributed.
+#
 # Output layout (kept organized so multiple tiers/versions don't collide):
-#   dist\<Tier>\v<Version>\FootNote-Setup-v<Version>[-Owner].exe
-#   dist\<Tier>\v<Version>\FootNote-v<Version>[-Owner]-win-x64.zip
+#   dist\<Tier>\v<Version>\FootNote-Setup-v<Version>[-Owner|-Direct].exe
+#   dist\<Tier>\v<Version>\FootNote-v<Version>[-Owner|-Direct]-win-x64.zip
 #   dist\_work\           <- transient staging, always wiped at the start of a build
 #   dist\_archive\        <- old artifacts from before this layout existed
-param([string]$Version = "1.2.0", [ValidateSet("Free", "Pro")][string]$Tier = "Free")
+param(
+    [string]$Version = "1.2.0",
+    [ValidateSet("Free", "Pro")][string]$Tier = "Free",
+    [ValidateSet("Owner", "Direct")][string]$Channel = "Owner"
+)
+
+if ($Tier -eq "Free" -and $Channel -eq "Direct") { throw "-Channel Direct only applies to -Tier Pro (Free has no Pro code linked in at all)." }
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
-$suffix = if ($Tier -eq "Pro") { "-Owner" } else { "" }
-$tierFolder = if ($Tier -eq "Pro") { "Owner" } else { "Free" }
+$suffix = if ($Tier -ne "Pro") { "" } elseif ($Channel -eq "Direct") { "-Direct" } else { "-Owner" }
+$tierFolder = if ($Tier -ne "Pro") { "Free" } elseif ($Channel -eq "Direct") { "Direct" } else { "Owner" }
 
 $dist = Join-Path $PSScriptRoot "dist"
 $work = Join-Path $dist "_work"
@@ -26,14 +39,14 @@ Remove-Item (Join-Path $releaseDir "FootNote-v$Version$suffix-win-x64.zip") -For
 
 $appOut = Join-Path $work "app"
 
-Write-Host "Publishing FootNote.App ($Tier, framework-dependent, single file)..."
+Write-Host "Publishing FootNote.App ($Tier/$Channel, framework-dependent, single file)..."
 # Framework-dependent, not self-contained: relies on the .NET 8 Desktop Runtime
 # already being on the machine (FootNote.Setup detects/installs it if missing —
 # Setup itself STAYS self-contained below, precisely so it can run that check
 # on a bare machine with nothing installed yet).
 dotnet publish FootNote.App -c Release -r win-x64 --self-contained false `
     -p:PublishSingleFile=true `
-    -p:Version=$Version -p:FootNoteTier=$Tier -o $appOut
+    -p:Version=$Version -p:FootNoteTier=$Tier -p:FootNoteChannel=$Channel -o $appOut
 if ($LASTEXITCODE -ne 0) { throw "App publish failed" }
 
 Write-Host "Publishing Uninstall.exe (stub, self-contained, trimmed)..."
