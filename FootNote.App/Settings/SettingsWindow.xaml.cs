@@ -98,6 +98,17 @@ public partial class SettingsWindow : Window
         }
     }
 
+    private void BuyLicenseLink_Click(object sender, RoutedEventArgs e)
+    {
+        var url = FootNote.Core.ProFeatures.Current.PurchaseUrl;
+        if (url is null) return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch { /* no browser to hand off to — nothing sensible to do here */ }
+    }
+
     private async void ActivateButton_Click(object sender, RoutedEventArgs e)
     {
         ActivateButton.IsEnabled = false;

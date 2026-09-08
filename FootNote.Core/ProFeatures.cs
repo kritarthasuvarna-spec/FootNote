@@ -36,6 +36,13 @@ public interface IProFeatures
     /// Irrelevant when <see cref="Unlocked"/> is already true.</summary>
     UnlockMethod Method { get; }
 
+    /// <summary>Where to send the user to actually buy the unlock, when
+    /// <see cref="Method"/> is <see cref="UnlockMethod.LicenseKey"/> — the
+    /// checkout page for someone who doesn't have a key yet. Null when
+    /// there's nothing to link to (Store's own UI needs no external page,
+    /// and None/Owner have no purchase path at all).</summary>
+    string? PurchaseUrl { get; }
+
     /// <summary>Runs once at startup, before anything reads <see cref="Unlocked"/>.
     /// The Owner build's implementation returns immediately (already unlocked,
     /// no external check needed); Store and Direct await a license check —
@@ -74,6 +81,7 @@ public sealed class NullProFeatures : IProFeatures
 {
     public bool Unlocked => false;
     public UnlockMethod Method => UnlockMethod.None;
+    public string? PurchaseUrl => null;
     public Task InitializeAsync() => Task.CompletedTask;
     public Task<bool> TryPurchaseUnlockAsync() => Task.FromResult(false);
     public Task<(bool Success, string? Error)> TryActivateLicenseAsync(string licenseKey) =>
