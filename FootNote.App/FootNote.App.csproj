@@ -18,6 +18,13 @@
          Pass -p:FootNoteTier=Pro to build.ps1 to build a Pro binary. -->
     <FootNoteTier Condition="'$(FootNoteTier)' == ''">Free</FootNoteTier>
     <DefineConstants Condition="'$(FootNoteTier)' == 'Pro'">$(DefineConstants);FOOTNOTE_PRO</DefineConstants>
+    <!-- Mirrors FootNote.Pro.csproj's FootNoteChannel — needed here too so
+         FootNote.App itself can gate anything Store policy forbids (e.g.
+         the GitHub update checker: Store policy 10.2.5 requires updates
+         come only through the Store, so a Store-channel build must not
+         check GitHub or link out to a non-Store download at all). -->
+    <FootNoteChannel Condition="'$(FootNoteChannel)' == ''">Owner</FootNoteChannel>
+    <DefineConstants Condition="'$(FootNoteChannel)' == 'Store'">$(DefineConstants);FOOTNOTE_STORE_CHANNEL</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

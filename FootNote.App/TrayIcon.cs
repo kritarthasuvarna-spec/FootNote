@@ -47,8 +47,12 @@ internal sealed class TrayIcon : IDisposable
         };
         menu.Items.Add(startup);
 
+#if !FOOTNOTE_STORE_CHANNEL
+        // Store policy 10.2.5: a Store-distributed build must not offer any
+        // update path outside the Store, so this entry doesn't exist there.
         menu.Items.Add(new ToolStripMenuItem("Check for updates…", null,
             (_, _) => OpenUrl(UpdateChecker.ReleasesPage)));
+#endif
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(new ToolStripMenuItem("Exit", null, (_, _) => onExit()));
 

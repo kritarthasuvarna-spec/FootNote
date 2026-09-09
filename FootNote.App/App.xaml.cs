@@ -127,7 +127,11 @@ public partial class App : System.Windows.Application
                 $"Now installed at {currentLocation}. Look for the icon in the system tray.");
         }
 
+#if !FOOTNOTE_STORE_CHANNEL
+        // Store policy 10.2.5: a Store-distributed app must only update
+        // through the Store — no checking GitHub, no linking out to it.
         _ = UpdateChecker.CheckAsync(_tray);
+#endif
         _ = Task.Run(MigrateAndBackfillNotes);
 
         if (Environment.GetEnvironmentVariable("FOOTNOTE_OPEN_SETTINGS") == "1")
