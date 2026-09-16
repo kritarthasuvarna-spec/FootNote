@@ -53,6 +53,18 @@
         <desktop:Extension Category="windows.startupTask" Executable="FootNote.App.exe" EntryPoint="Windows.FullTrustApplication">
           <desktop:StartupTask TaskId="FootNoteStartup" Enabled="false" DisplayName="FootNote" />
         </desktop:Extension>
+        <!-- Icon only, cosmetic — no verbs declared, so this must not make
+             FootNote a suggested/default opener for .footnote files. They
+             stay inert; this just keeps them from looking like generic
+             blank files in Explorer. -->
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap:FileTypeAssociation Name="footnote">
+            <uap:Logo>Assets\Square44x44Logo.png</uap:Logo>
+            <uap:SupportedFileTypes>
+              <uap:FileType>.footnote</uap:FileType>
+            </uap:SupportedFileTypes>
+          </uap:FileTypeAssociation>
+        </uap:Extension>
       </Extensions>
     </Application>
   </Applications>

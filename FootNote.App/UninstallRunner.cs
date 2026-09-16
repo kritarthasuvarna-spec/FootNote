@@ -70,6 +70,15 @@ internal sealed class UninstallRunner
 
         try
         {
+            Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\.footnote", throwOnMissingSubKey: false);
+            Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\FootNote.sidecarfile", throwOnMissingSubKey: false);
+            NativeMethods.SHChangeNotify(NativeMethods.SHCNE_ASSOCCHANGED, NativeMethods.SHCNF_IDLIST, IntPtr.Zero, IntPtr.Zero);
+            Logger.Info("sidecar file icon association removed");
+        }
+        catch (Exception ex) { Logger.Error("sidecar icon key: " + ex.Message); }
+
+        try
+        {
             if (File.Exists(InstallHelper.StartMenuShortcutPath))
             {
                 File.Delete(InstallHelper.StartMenuShortcutPath);

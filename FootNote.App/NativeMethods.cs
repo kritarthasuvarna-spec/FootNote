@@ -5,6 +5,13 @@ namespace FootNote.App;
 
 internal static class NativeMethods
 {
+    // --- Shell change notification (icon cache refresh) --------------------
+    [DllImport("shell32.dll")]
+    public static extern void SHChangeNotify(int wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
+
+    public const int SHCNE_ASSOCCHANGED = 0x08000000;
+    public const uint SHCNF_IDLIST = 0x0000;
+
     // --- Window identity -------------------------------------------------
     [DllImport("user32.dll")]
     public static extern IntPtr GetForegroundWindow();

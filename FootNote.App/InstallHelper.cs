@@ -13,6 +13,9 @@ internal static class InstallHelper
 {
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string UninstallKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\FootNote";
+    private const string FootnoteExtKeyPath = @"Software\Classes\.footnote";
+    private const string FootnoteProgId = "FootNote.sidecarfile";
+    private const string FootnoteProgIdKeyPath = @"Software\Classes\" + FootnoteProgId;
     private const string AppName = "FootNote";
 
     public static string ExePath => Environment.ProcessPath ?? Process.GetCurrentProcess().MainModule!.FileName;
@@ -39,8 +42,37 @@ internal static class InstallHelper
             if (MsixEnvironment.IsPackaged) return; // MSIX already owns the Apps & Features entry and Start Menu tile
             WriteUninstallEntry();
             CreateStartMenuShortcut();
+            RegisterSidecarIcon();
         }
         catch { /* registry unavailable — app still functions this session */ }
+    }
+
+    /// <summary>Gives .footnote sidecar files the app's own icon in Explorer
+    /// instead of Windows' generic blank one — purely cosmetic. Verified live:
+    /// a bare DefaultIcon directly under ".footnote" with no ProgID is
+    /// silently ignored by Explorer — the shell only resolves DefaultIcon
+    /// through a ProgID chain (.ext → ProgID → ProgID\DefaultIcon). So this
+    /// registers a minimal ProgID with ONLY a DefaultIcon subkey — no
+    /// shell\open\command, no verbs — so double-click still falls through to
+    /// Windows' normal "no app associated" prompt, unchanged.</summary>
+    private static void RegisterSidecarIcon()
+    {
+        try
+        {
+            using var ext = Registry.CurrentUser.CreateSubKey(FootnoteExtKeyPath);
+            if (ext.GetValue(null) as string != FootnoteProgId)
+                ext.SetValue(null, FootnoteProgId);
+
+            using var progId = Registry.CurrentUser.CreateSubKey(FootnoteProgIdKeyPath);
+            using var iconKey = progId.CreateSubKey("DefaultIcon");
+            string desired = $"{ExePath},0";
+            if (iconKey.GetValue(null) as string != desired)
+            {
+                iconKey.SetValue(null, desired);
+                NativeMethods.SHChangeNotify(NativeMethods.SHCNE_ASSOCCHANGED, NativeMethods.SHCNF_IDLIST, IntPtr.Zero, IntPtr.Zero);
+            }
+        }
+        catch { }
     }
 
     /// <summary>Start Menu entry — makes the install feel standard rather than
