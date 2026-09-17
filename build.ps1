@@ -1,30 +1,28 @@
 # FootNote release build: publishes self-contained binaries, produces the
 # distributable zip AND the Setup wizard exe.
 #
-# What to actually publish to GitHub Releases: -Tier Pro -Channel Direct.
-# That's the single build everyone downloads — free by default, unlocks in
-# Settings with a Lemon Squeezy license key. Plain -Tier Free (no Pro code
-# linked in at all) is kept only as a fallback/reference build, not what's
-# meant to ship. -Tier Pro -Channel Owner is the personal/sideload build,
-# always unlocked, never distributed.
+# Pro monetization is Microsoft Store IAP only (see FootNote.Msix\package-
+# msix.ps1 -Tier Pro -Channel Store) — there is no paid unlock path outside
+# the Store. This script only ever produces: plain -Tier Free (what ships
+# to GitHub Releases — free forever, no Pro code linked in at all), and
+# -Tier Pro -Channel Owner (the personal/sideload build, always unlocked,
+# never distributed).
 #
 # Output layout (kept organized so multiple tiers/versions don't collide):
-#   dist\<Tier>\v<Version>\FootNote-Setup-v<Version>[-Owner|-Direct].exe
-#   dist\<Tier>\v<Version>\FootNote-v<Version>[-Owner|-Direct]-win-x64.zip
+#   dist\<Tier>\v<Version>\FootNote-Setup-v<Version>[-Owner].exe
+#   dist\<Tier>\v<Version>\FootNote-v<Version>[-Owner]-win-x64.zip
 #   dist\_work\           <- transient staging, always wiped at the start of a build
 #   dist\_archive\        <- old artifacts from before this layout existed
 param(
     [string]$Version = "1.2.0",
     [ValidateSet("Free", "Pro")][string]$Tier = "Free",
-    [ValidateSet("Owner", "Direct")][string]$Channel = "Owner"
+    [ValidateSet("Owner")][string]$Channel = "Owner"
 )
-
-if ($Tier -eq "Free" -and $Channel -eq "Direct") { throw "-Channel Direct only applies to -Tier Pro (Free has no Pro code linked in at all)." }
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
-$suffix = if ($Tier -ne "Pro") { "" } elseif ($Channel -eq "Direct") { "-Direct" } else { "-Owner" }
-$tierFolder = if ($Tier -ne "Pro") { "Free" } elseif ($Channel -eq "Direct") { "Direct" } else { "Owner" }
+$suffix = if ($Tier -ne "Pro") { "" } else { "-Owner" }
+$tierFolder = if ($Tier -ne "Pro") { "Free" } else { "Owner" }
 
 $dist = Join-Path $PSScriptRoot "dist"
 $work = Join-Path $dist "_work"

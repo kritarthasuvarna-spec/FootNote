@@ -71,12 +71,9 @@ public partial class SettingsWindow : Window
                 case FootNote.Core.UnlockMethod.StorePurchase:
                     StoreUnlockPanel.Visibility = Visibility.Visible;
                     break;
-                case FootNote.Core.UnlockMethod.LicenseKey:
-                    LicenseUnlockPanel.Visibility = Visibility.Visible;
-                    break;
                 // UnlockMethod.None: this is the plain Free build (no Pro
-                // project linked in at all) — nothing to buy, so neither
-                // panel applies. The upsell text above still explains what
+                // project linked in at all) — nothing to buy, so the panel
+                // stays hidden. The upsell text above still explains what
                 // Pro would add.
             }
         }
@@ -95,33 +92,6 @@ public partial class SettingsWindow : Window
         {
             StoreUnlockStatus.Text = "Purchase didn't complete.";
             BuyButton.IsEnabled = true;
-        }
-    }
-
-    private void BuyLicenseLink_Click(object sender, RoutedEventArgs e)
-    {
-        var url = FootNote.Core.ProFeatures.Current.PurchaseUrl;
-        if (url is null) return;
-        try
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
-        }
-        catch { /* no browser to hand off to — nothing sensible to do here */ }
-    }
-
-    private async void ActivateButton_Click(object sender, RoutedEventArgs e)
-    {
-        ActivateButton.IsEnabled = false;
-        LicenseUnlockStatus.Text = "Checking license key…";
-        var (success, error) = await FootNote.Core.ProFeatures.Current.TryActivateLicenseAsync(LicenseKeyBox.Text);
-        if (success)
-        {
-            LicenseUnlockStatus.Text = "Unlocked! Restart FootNote to see the new options.";
-        }
-        else
-        {
-            LicenseUnlockStatus.Text = error ?? "Couldn't activate that key.";
-            ActivateButton.IsEnabled = true;
         }
     }
 

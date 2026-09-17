@@ -18,36 +18,23 @@ public enum UnlockMethod
     None,
     /// <summary>Show a "Buy" button that opens the Store's own purchase UI.</summary>
     StorePurchase,
-    /// <summary>Show a license-key entry box (the GitHub/direct-sale build).</summary>
-    LicenseKey,
 }
 
 public interface IProFeatures
 {
-    /// <summary>True for the Store-Paid (after purchase), Direct (after a
-    /// validated license key), and Owner builds; false for Git-Free, an
-    /// unpurchased Store-Paid install, and a Direct install with no key yet.
-    /// For Store/Direct this reflects the last completed
-    /// <see cref="InitializeAsync"/> — call that once at startup before
-    /// trusting this value.</summary>
+    /// <summary>True for the Store-Paid (after purchase) and Owner builds;
+    /// false for Git-Free and an unpurchased Store-Paid install. For Store
+    /// this reflects the last completed <see cref="InitializeAsync"/> —
+    /// call that once at startup before trusting this value.</summary>
     bool Unlocked { get; }
 
     /// <summary>Which control the Settings upsell should show when locked.
     /// Irrelevant when <see cref="Unlocked"/> is already true.</summary>
     UnlockMethod Method { get; }
 
-    /// <summary>Where to send the user to actually buy the unlock, when
-    /// <see cref="Method"/> is <see cref="UnlockMethod.LicenseKey"/> — the
-    /// checkout page for someone who doesn't have a key yet. Null when
-    /// there's nothing to link to (Store's own UI needs no external page,
-    /// and None/Owner have no purchase path at all).</summary>
-    string? PurchaseUrl { get; }
-
     /// <summary>Runs once at startup, before anything reads <see cref="Unlocked"/>.
     /// The Owner build's implementation returns immediately (already unlocked,
-    /// no external check needed); Store and Direct await a license check —
-    /// Direct's has an offline grace period, so this only truly blocks on
-    /// network the first run or once that grace period has lapsed.
+    /// no external check needed); Store awaits a license check.
     /// No-op on the Free build.</summary>
     Task InitializeAsync();
 
@@ -56,12 +43,6 @@ public interface IProFeatures
     /// <see cref="Method"/> is <see cref="UnlockMethod.StorePurchase"/> —
     /// no-op (returns false) everywhere else.</summary>
     Task<bool> TryPurchaseUnlockAsync();
-
-    /// <summary>Activates a license key purchased outside the Store (Lemon
-    /// Squeezy) and updates <see cref="Unlocked"/> on success. Only
-    /// meaningful when <see cref="Method"/> is
-    /// <see cref="UnlockMethod.LicenseKey"/> — no-op everywhere else.</summary>
-    Task<(bool Success, string? Error)> TryActivateLicenseAsync(string licenseKey);
 
     /// <summary>Mirrors a note's current history into the local backup safety net.
     /// No-op on a build that doesn't have backup/Recover Notes.</summary>
@@ -81,11 +62,8 @@ public sealed class NullProFeatures : IProFeatures
 {
     public bool Unlocked => false;
     public UnlockMethod Method => UnlockMethod.None;
-    public string? PurchaseUrl => null;
     public Task InitializeAsync() => Task.CompletedTask;
     public Task<bool> TryPurchaseUnlockAsync() => Task.FromResult(false);
-    public Task<(bool Success, string? Error)> TryActivateLicenseAsync(string licenseKey) =>
-        Task.FromResult<(bool, string?)>((false, "Not supported in this build."));
     public void RecordSave(string path, NoteHistory history) { }
     public void RecordDelete(string path) { }
     public bool TryOpenHistory(string path) => false;
