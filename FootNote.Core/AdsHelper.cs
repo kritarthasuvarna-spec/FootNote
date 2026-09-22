@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace FootNote.Core;
 
@@ -28,12 +29,36 @@ public sealed class AdsHelper : ICommentStore
     private static extern uint GetFileAttributesW(string lpFileName);
     private const uint INVALID_FILE_ATTRIBUTES = 0xFFFFFFFF;
 
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern Microsoft.Win32.SafeHandles.SafeFileHandle CreateFileW(
+        string lpFileName, uint dwDesiredAccess, uint dwShareMode, IntPtr lpSecurityAttributes,
+        uint dwCreationDisposition, uint dwFlagsAndAttributes, IntPtr hTemplateFile);
+    private const uint GENERIC_READ = 0x80000000;
+    private const uint FILE_SHARE_READ = 0x1;
+    private const uint FILE_SHARE_WRITE = 0x2;
+    private const uint OPEN_EXISTING = 3;
+    private const uint FILE_FLAG_BACKUP_SEMANTICS = 0x02000000;
+
     /// <summary>File.Exists is false for streams on <em>directories</em> (the
     /// directory attribute leaks through), so existence is checked natively.</summary>
     private static bool StreamExists(string streamPath)
     {
         try { return GetFileAttributesW(streamPath) != INVALID_FILE_ATTRIBUTES; }
         catch { return false; }
+    }
+
+    /// <summary>File.ReadAllText fails on streams rooted at a <em>directory</em> —
+    /// opening a directory-backed handle needs FILE_FLAG_BACKUP_SEMANTICS, which the
+    /// managed File APIs never set. Mirrors the StreamExists workaround above, for
+    /// the actual content read.</summary>
+    private static string ReadAllTextNative(string streamPath)
+    {
+        using var handle = CreateFileW(streamPath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+            IntPtr.Zero, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, IntPtr.Zero);
+        if (handle.IsInvalid) throw new IOException($"Unable to open {streamPath}", Marshal.GetLastWin32Error());
+        using var stream = new FileStream(handle, FileAccess.Read);
+        using var reader = new StreamReader(stream, Encoding.UTF8);
+        return reader.ReadToEnd();
     }
 
     public bool HasComment(string filePath)
@@ -44,9 +69,11 @@ public sealed class AdsHelper : ICommentStore
 
     public NoteHistory? ReadHistory(string filePath)
     {
+        bool isDir = Directory.Exists(filePath);
+
         try
         {
-            string raw = File.ReadAllText(StreamPath(filePath));
+            string raw = isDir ? ReadAllTextNative(StreamPath(filePath)) : File.ReadAllText(StreamPath(filePath));
             return NoteFormat.Parse(raw, File.GetLastWriteTimeUtc(filePath));
         }
         catch (IOException) { /* fall through to legacy */ }
@@ -54,7 +81,7 @@ public sealed class AdsHelper : ICommentStore
 
         try
         {
-            string raw = File.ReadAllText(LegacyStreamPath(filePath));
+            string raw = isDir ? ReadAllTextNative(LegacyStreamPath(filePath)) : File.ReadAllText(LegacyStreamPath(filePath));
             return NoteFormat.Parse(raw, File.GetLastWriteTimeUtc(filePath));
         }
         catch (IOException) { return null; }
