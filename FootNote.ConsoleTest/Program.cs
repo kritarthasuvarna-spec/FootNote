@@ -15,6 +15,10 @@ if (args.Length >= 1)
     if (args.Length >= 2)
     {
         StorageRouter.Save(p, string.Join(' ', args.Skip(1)));
+        // Mirror what App.xaml.cs does after a real GUI save, so this live-probe
+        // path also populates the local backup that Search reads from.
+        var savedHistory = StorageRouter.ReadHistory(p);
+        if (savedHistory?.Latest is not null) NotesBackup.RecordSave(p, savedHistory);
         Console.WriteLine("saved.");
     }
     Console.WriteLine($"hasComment: {StorageRouter.HasComment(p)}");

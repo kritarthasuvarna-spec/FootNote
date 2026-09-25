@@ -18,10 +18,13 @@ public partial class App : System.Windows.Application
     private TrayIcon _tray = null!;
     private ToastManager _toasts = null!;
     private HotkeyManager _hotkey = null!;
+    private HotkeyManager _searchHotkey = null!;
+    private SearchBar? _searchBar;
     private ExplorerWatcher _watcher = null!;
     private DispatcherTimer _debounce = null!;
     private SettingsWindow? _settingsWindow;
     private string _appliedHotkey = "";
+    private string _appliedSearchHotkey = "";
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -103,9 +106,17 @@ public partial class App : System.Windows.Application
         ApplyHotkeyFromSettings(warnOnFailure: true);
         DebugLog.Write($"startup: hotkey registered={_hotkey.Registered}");
         Logger.Info($"hotkey {SettingsService.Instance.Current.HotkeyDisplay} registered={_hotkey.Registered}");
+
+        _searchHotkey = new HotkeyManager(0xF120, 0xF121);
+        _searchHotkey.Pressed += OnSearchHotkey;
+        ApplySearchHotkeyFromSettings(warnOnFailure: true);
+        DebugLog.Write($"startup: search hotkey registered={_searchHotkey.Registered}");
+        Logger.Info($"search hotkey {SettingsService.Instance.Current.SearchHotkeyDisplay} registered={_searchHotkey.Registered}");
+
         Logger.Info($"cloud sync roots: {string.Join(" | ", CloudFolderDetector.GetRoots())}");
 
         SettingsService.Instance.SettingsChanged += () => ApplyHotkeyFromSettings(warnOnFailure: false);
+        SettingsService.Instance.SettingsChanged += () => ApplySearchHotkeyFromSettings(warnOnFailure: false);
 
         // Selection events arrive in bursts from any thread; collapse them into
         // one evaluation ~120ms after the burst ends.
@@ -172,6 +183,30 @@ public partial class App : System.Windows.Application
         else if (warnOnFailure) _toasts.HotkeyConflict(s.HotkeyDisplay);
     }
 
+    private void ApplySearchHotkeyFromSettings(bool warnOnFailure)
+    {
+        var s = SettingsService.Instance.Current;
+        if (s.SearchHotkeyDisplay == _appliedSearchHotkey && _searchHotkey.Registered) return;
+        bool ok = _searchHotkey.Apply(s.SearchHotkeyCtrl, s.SearchHotkeyShift, s.SearchHotkeyAlt, s.SearchHotkeyKey);
+        if (ok) _appliedSearchHotkey = s.SearchHotkeyDisplay;
+        else if (warnOnFailure) _toasts.HotkeyConflict(s.SearchHotkeyDisplay);
+    }
+
+    private void OnSearchHotkey()
+    {
+        try
+        {
+            if (_searchBar is null)
+            {
+                _searchBar = new SearchBar();
+                _searchBar.RevealFailed += () => _toasts.RevealInExplorerFailed();
+            }
+            if (_searchBar.IsVisible) _searchBar.HideAndClear();
+            else _searchBar.ShowFresh();
+        }
+        catch (Exception ex) { DebugLog.Write("search hotkey EX: " + ex); }
+    }
+
     private RecoverNotesWindow? _recoverNotes;
 
     private void OpenRecoverNotes()
@@ -209,7 +244,7 @@ public partial class App : System.Windows.Application
             _settingsWindow.Activate();
             return;
         }
-        _settingsWindow = new SettingsWindow(new SettingsViewModel(_hotkey.Probe));
+        _settingsWindow = new SettingsWindow(new SettingsViewModel(_hotkey.Probe, _searchHotkey.Probe));
         _settingsWindow.Show();
         _settingsWindow.Activate();
     }
@@ -490,6 +525,7 @@ public partial class App : System.Windows.Application
         Logger.Info("exit via tray menu");
         _watcher?.Dispose();
         _hotkey?.Dispose();
+        _searchHotkey?.Dispose();
         _tray?.Dispose();
         Shutdown();
     }

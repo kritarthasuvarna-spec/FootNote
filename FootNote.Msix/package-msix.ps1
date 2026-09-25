@@ -12,7 +12,7 @@
 #   .\package-msix.ps1 -Tier Pro                          # Owner tier (always unlocked, sideload only)
 #   .\package-msix.ps1 -Tier Pro -Channel Store           # Store-Paid tier (starts locked, real IAP) -- THIS is what goes to Partner Center
 param(
-    [string]$Version = "1.2.0",
+    [string]$Version = "1.3.0",
     [ValidateSet("Free", "Pro")][string]$Tier = "Free",
     [ValidateSet("Owner", "Store")][string]$Channel = "Owner"
 )

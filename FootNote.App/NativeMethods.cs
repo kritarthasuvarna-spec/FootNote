@@ -100,6 +100,9 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     public static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
 
+    [DllImport("user32.dll")]
+    public static extern bool GetCursorPos(out POINT lpPoint);
+
     [StructLayout(LayoutKind.Sequential)]
     public struct RECT { public int Left, Top, Right, Bottom; }
 
@@ -175,5 +178,33 @@ internal static class NativeMethods
             finally { Marshal.FreeHGlobal(p); }
         }
         catch { /* unsupported OS build — panel simply stays opaque */ }
+    }
+
+    // --- Reveal & select item in Explorer -----------------------------------
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    private static extern int SHParseDisplayName(string pszName, IntPtr pbc, out IntPtr ppidl,
+        uint sfgaoIn, out uint psfgaoOut);
+
+    [DllImport("shell32.dll")]
+    private static extern int SHOpenFolderAndSelectItems(IntPtr pidlFolder, uint cidl, IntPtr apidl, uint dwFlags);
+
+    [DllImport("shell32.dll")]
+    private static extern void ILFree(IntPtr pidl);
+
+    /// <summary>Opens Explorer with the given file or folder selected/highlighted.
+    /// Returns false (never throws) if the path can't be resolved or Explorer
+    /// refuses — callers should fall back to a toast.</summary>
+    public static bool RevealInExplorer(string path)
+    {
+        IntPtr pidl = IntPtr.Zero;
+        try
+        {
+            if (SHParseDisplayName(path, IntPtr.Zero, out pidl, 0, out _) != 0 || pidl == IntPtr.Zero)
+                return false;
+            int hr = SHOpenFolderAndSelectItems(pidl, 0, IntPtr.Zero, 0);
+            return hr == 0; // S_OK
+        }
+        catch { return false; }
+        finally { if (pidl != IntPtr.Zero) ILFree(pidl); }
     }
 }

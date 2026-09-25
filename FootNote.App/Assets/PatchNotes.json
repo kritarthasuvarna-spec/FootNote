@@ -1,4 +1,7 @@
 [
+  { "version": "1.3.0", "notes": [
+    "New: search all your notes at once. Press Ctrl+Shift+Alt+N (remappable in Settings) to open a search box — find a note by its text or the file's name, then jump straight to it in Explorer.",
+    "Fixed: notes on folders sometimes didn't show up again after being saved." ] },
   { "version": "1.2.0", "notes": [
     "New brand identity: a fresh app icon and a small ink-drop mark in place of the old emoji, throughout the app and installer." ] },
   { "version": "1.1.5", "notes": [

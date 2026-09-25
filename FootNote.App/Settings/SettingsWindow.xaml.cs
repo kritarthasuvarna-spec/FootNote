@@ -146,5 +146,36 @@ public partial class SettingsWindow : Window
         HotkeyBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)?.UpdateTarget();
     }
 
+    private void SearchHotkeyBox_GotFocus(object sender, KeyboardFocusChangedEventArgs e) =>
+        SearchHotkeyBox.Text = "Press a key combination…";
+
+    private void SearchHotkeyBox_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        e.Handled = true;
+        Key key = e.Key == Key.System ? e.SystemKey : e.Key;
+
+        if (key is Key.LeftCtrl or Key.RightCtrl or Key.LeftShift or Key.RightShift
+            or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin or Key.None)
+            return;
+
+        string? keyName = key switch
+        {
+            >= Key.A and <= Key.Z => key.ToString(),
+            >= Key.D0 and <= Key.D9 => key.ToString()[1..],
+            >= Key.NumPad0 and <= Key.NumPad9 => key.ToString()[6..],
+            >= Key.F1 and <= Key.F24 => key.ToString(),
+            _ => null,
+        };
+
+        var mods = Keyboard.Modifiers;
+        _vm.TrySetSearchHotkey(
+            mods.HasFlag(ModifierKeys.Control),
+            mods.HasFlag(ModifierKeys.Shift),
+            mods.HasFlag(ModifierKeys.Alt),
+            keyName ?? "?");
+
+        SearchHotkeyBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)?.UpdateTarget();
+    }
+
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 }

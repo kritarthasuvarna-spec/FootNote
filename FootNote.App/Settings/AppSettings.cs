@@ -81,6 +81,27 @@ public sealed class AppSettings
         }
     }
 
+    // --- Search hotkey ------------------------------------------------------
+    public bool SearchHotkeyCtrl { get; set; } = true;
+    public bool SearchHotkeyShift { get; set; } = true;
+    public bool SearchHotkeyAlt { get; set; } = true;
+    /// <summary>"A"–"Z", "0"–"9", or "F1"–"F24".</summary>
+    public string SearchHotkeyKey { get; set; } = "N";
+
+    [JsonIgnore]
+    public string SearchHotkeyDisplay
+    {
+        get
+        {
+            var parts = new List<string>(4);
+            if (SearchHotkeyCtrl) parts.Add("Ctrl");
+            if (SearchHotkeyShift) parts.Add("Shift");
+            if (SearchHotkeyAlt) parts.Add("Alt");
+            parts.Add(SearchHotkeyKey);
+            return string.Join("+", parts);
+        }
+    }
+
     [JsonIgnore]
     public bool IsBottomEdge => !ScreenEdge.Equals("Top", StringComparison.OrdinalIgnoreCase);
 }

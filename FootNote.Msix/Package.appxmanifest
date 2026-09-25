@@ -15,7 +15,7 @@
   <Identity
     Name="Kritarth.FootnoteCommentsforFiles"
     Publisher="CN=F94053C2-7FE8-4301-BE68-5CF640A88F39"
-    Version="1.2.1.0" />
+    Version="1.3.0.0" />
 
   <Properties>
     <DisplayName>Footnote: Comments for Files</DisplayName>

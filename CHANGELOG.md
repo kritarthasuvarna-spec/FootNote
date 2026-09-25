@@ -3,6 +3,44 @@
 Record of what was actually implemented, tested, fixed, or deferred per
 release. User-facing notes live in `FootNote.App/Assets/PatchNotes.json`.
 
+## 1.3.0 — 2026-09-25
+- **New: search all notes.** A second global hotkey (default
+  Ctrl+Shift+Alt+N, independently remappable in Settings) opens a floating
+  search box. Enter runs the search over every live note's text and
+  filename (`FootNote.Core/NotesSearch.cs`, filtering `NotesBackup.LoadAll()`
+  — no new index needed), ranked filename-matches-first then by recency,
+  capped at 50 results with a highlighted-match snippet. Clicking or
+  pressing Enter on a result reveals and selects that file/folder in
+  Explorer via a new `SHParseDisplayName`/`SHOpenFolderAndSelectItems`
+  wrapper (`NativeMethods.RevealInExplorer`) and closes the box.
+  - `HotkeyManager` now takes its RegisterHotKey ids via constructor
+    instead of hardcoded consts, so two independent hotkeys can coexist.
+  - Search window (`SearchBar.xaml`) opens with the pill-shaped field
+    animating from a centered circular icon button out to full width
+    (the icon rides along, visually sliding from center to its final
+    left-inset position as the shape expands), holds briefly, then a
+    short blink + typewriter reveal fills the placeholder — all skipped
+    instantly the moment the user actually types.
+  - Fixed a real bug found in live testing: Escape sometimes failed to
+    close the search box (a known WPF quirk where an Alt-chorded hotkey
+    can leave Escape reporting as `Key.System`/`SystemKey` instead of
+    plain `Key.Escape`); now checks both.
+- Fixed notes on **folders** not redisplaying after being saved:
+  `AdsHelper.ReadHistory` was still using `File.ReadAllText` directly,
+  which fails on a directory-rooted ADS stream without
+  `FILE_FLAG_BACKUP_SEMANTICS` — the existence check (`StreamExists`) had
+  already been patched for this same directory-handle limitation, but the
+  actual content read never got the equivalent fix. Added a native
+  `CreateFileW`-based read path for directories, files unaffected.
+
+## 1.2.1 — 2026-09-07 (Store channel only, no GitHub release)
+- Gave `.footnote` sidecar files a custom Explorer icon (reuses the app's
+  own icon via a `DefaultIcon` registry entry on unpackaged builds, a
+  declarative `windows.fileTypeAssociation` manifest extension on MSIX) —
+  purely cosmetic, no change to double-click behavior; the files stay
+  exactly as inert as before.
+- Store MSIX identity bumped 1.2.0.0 → 1.2.1.0 for this change.
+
 ## 1.2.0 — 2026-09-03
 - New brand identity locked in (`docs/brand/Brand_Identity.md`): the
   "Bleeding Drop" mark — a radial-gradient circle with a soft blurred

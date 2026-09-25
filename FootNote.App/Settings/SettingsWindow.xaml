@@ -198,6 +198,23 @@
                     </StackPanel>
                 </Border>
 
+                <TextBlock Text="SEARCH HOTKEY" Style="{StaticResource SectionHeader}"/>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Search notes shortcut" Margin="0,0,0,6"/>
+                        <TextBox x:Name="SearchHotkeyBox" IsReadOnly="True" IsReadOnlyCaretVisible="False"
+                                 Text="{Binding SearchHotkeyDisplay, Mode=OneWay}"
+                                 Background="#3D3D4D" Foreground="{StaticResource Text}"
+                                 BorderBrush="#5A5A6E" Padding="8,6" FontSize="14"
+                                 PreviewKeyDown="SearchHotkeyBox_PreviewKeyDown"
+                                 GotKeyboardFocus="SearchHotkeyBox_GotFocus"/>
+                        <TextBlock Text="Click the box, then press the new combination."
+                                   Foreground="{StaticResource Dim}" FontSize="11" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding SearchHotkeyStatus}" FontSize="11" Margin="0,4,0,0"
+                                   Foreground="#8FD18F"/>
+                    </StackPanel>
+                </Border>
+
             </StackPanel>
         </ScrollViewer>
 

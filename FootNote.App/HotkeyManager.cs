@@ -10,8 +10,8 @@ namespace FootNote.App;
 /// </summary>
 internal sealed class HotkeyManager : IDisposable
 {
-    private const int HotkeyId = 0xF11E;
-    private const int ProbeId = 0xF11F;
+    private readonly int HotkeyId;
+    private readonly int ProbeId;
 
     private readonly HwndSource _source;
     private (uint mods, uint vk)? _current;
@@ -19,8 +19,12 @@ internal sealed class HotkeyManager : IDisposable
     public event Action? Pressed;
     public bool Registered { get; private set; }
 
-    public HotkeyManager()
+    /// <summary>Each live instance needs its own RegisterHotKey ids, since two
+    /// instances (e.g. the note hotkey and the search hotkey) share no state.</summary>
+    public HotkeyManager(int hotkeyId = 0xF11E, int probeId = 0xF11F)
     {
+        HotkeyId = hotkeyId;
+        ProbeId = probeId;
         var p = new HwndSourceParameters("FootNoteHotkeyWindow")
         {
             Width = 0,

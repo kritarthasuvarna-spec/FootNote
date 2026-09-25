@@ -18,13 +18,16 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
 {
     private readonly SettingsService _service = SettingsService.Instance;
     private readonly Func<bool, bool, bool, string, bool> _probeHotkey;
+    private readonly Func<bool, bool, bool, string, bool> _probeSearchHotkey;
     private AppSettings S => _service.Current;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public SettingsViewModel(Func<bool, bool, bool, string, bool> probeHotkey)
+    public SettingsViewModel(Func<bool, bool, bool, string, bool> probeHotkey,
+        Func<bool, bool, bool, string, bool> probeSearchHotkey)
     {
         _probeHotkey = probeHotkey;
+        _probeSearchHotkey = probeSearchHotkey;
         ResetToDefaultsCommand = new RelayCommand(() =>
         {
             _service.ResetToDefaults();
@@ -265,6 +268,37 @@ public sealed class SettingsViewModel : INotifyPropertyChanged
     private static string FormatCombo(bool c, bool s, bool a, string k) =>
         string.Join("+", new[] { c ? "Ctrl" : null, s ? "Shift" : null, a ? "Alt" : null, k }
             .Where(x => x is not null));
+
+    // ---- Search hotkey ----------------------------------------------------
+
+    public string SearchHotkeyDisplay => S.SearchHotkeyDisplay;
+
+    public string SearchHotkeyStatus { get; private set; } = "";
+
+    /// <summary>Called by the search hotkey capture box. Validates before accepting.</summary>
+    public void TrySetSearchHotkey(bool ctrl, bool shift, bool alt, string key)
+    {
+        if (HotkeyManager.VkFromKey(key) == 0)
+        {
+            SearchHotkeyStatus = "Unsupported key — use a letter, digit, or F-key.";
+        }
+        else if (!ctrl && !shift && !alt)
+        {
+            SearchHotkeyStatus = "Add at least one modifier (Ctrl/Shift/Alt).";
+        }
+        else if (!_probeSearchHotkey(ctrl, shift, alt, key))
+        {
+            SearchHotkeyStatus = $"{FormatCombo(ctrl, shift, alt, key)} is already taken by another app.";
+        }
+        else
+        {
+            S.SearchHotkeyCtrl = ctrl; S.SearchHotkeyShift = shift; S.SearchHotkeyAlt = alt; S.SearchHotkeyKey = key;
+            SearchHotkeyStatus = "Applied.";
+            Changed();
+        }
+        Raise(nameof(SearchHotkeyDisplay));
+        Raise(nameof(SearchHotkeyStatus));
+    }
 
     // ---- plumbing ----------------------------------------------------------------
 

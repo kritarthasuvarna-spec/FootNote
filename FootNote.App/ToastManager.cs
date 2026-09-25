@@ -35,4 +35,7 @@ internal sealed class ToastManager
 
     public void HotkeyConflict(string combo) =>
         Toast($"{combo} is taken by another app — change it in Settings.", "hotkey registration failed");
+
+    public void RevealInExplorerFailed() =>
+        Toast("Couldn't open Explorer for that item", "SHOpenFolderAndSelectItems failed");
 }
