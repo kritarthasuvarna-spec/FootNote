@@ -50,6 +50,42 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     public static extern bool BringWindowToTop(IntPtr hWnd);
 
+    [DllImport("user32.dll")]
+    public static extern bool IsChild(IntPtr hWndParent, IntPtr hWnd);
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct GUITHREADINFO
+    {
+        public int cbSize;
+        public int flags;
+        public IntPtr hwndActive;
+        public IntPtr hwndFocus;
+        public IntPtr hwndCapture;
+        public IntPtr hwndMenuOwner;
+        public IntPtr hwndMoveSize;
+        public IntPtr hwndCaret;
+        public int left, top, right, bottom;
+    }
+
+    [DllImport("user32.dll")]
+    public static extern bool GetGUIThreadInfo(uint idThread, ref GUITHREADINFO lpgui);
+
+    /// <summary>
+    /// The control that currently has keyboard focus on the given window's UI
+    /// thread, or IntPtr.Zero if that thread doesn't own focus right now (e.g.
+    /// a different app is foreground). Never throws.
+    /// </summary>
+    public static IntPtr GetFocusedControl(IntPtr hwnd)
+    {
+        try
+        {
+            uint tid = GetWindowThreadProcessId(hwnd, out _);
+            var info = new GUITHREADINFO { cbSize = Marshal.SizeOf<GUITHREADINFO>() };
+            return GetGUIThreadInfo(tid, ref info) ? info.hwndFocus : IntPtr.Zero;
+        }
+        catch { return IntPtr.Zero; }
+    }
+
     // --- Hotkey -----------------------------------------------------------
     public const int WM_HOTKEY = 0x0312;
     public const uint MOD_ALT = 0x0001;

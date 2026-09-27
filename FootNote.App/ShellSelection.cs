@@ -93,6 +93,14 @@ internal static class ShellSelection
             dynamic? soleMatchDoc = null;
             int matches = 0;
 
+            // Win11 tabbed Explorer keeps every open tab's shell-view pane
+            // WS_VISIBLE at the same time (only z-order/clipping actually
+            // distinguishes the one you're looking at) — IsWindowVisible
+            // can't tell tabs apart. Keyboard focus can: whichever tab is
+            // frontmost owns the focused child control on the window's UI
+            // thread, so match tab HWNDs against that instead.
+            IntPtr focused = NativeMethods.GetFocusedControl(explorerHwnd);
+
             dynamic windows = shell.Windows();
             foreach (dynamic w in windows)
             {
@@ -103,7 +111,8 @@ internal static class ShellSelection
                     soleMatchDoc = w.Document;
 
                     IntPtr tabHwnd = GetTabHwnd(w);
-                    if (tabHwnd != IntPtr.Zero && NativeMethods.IsWindowVisible(tabHwnd))
+                    if (tabHwnd != IntPtr.Zero && focused != IntPtr.Zero &&
+                        (tabHwnd == focused || NativeMethods.IsChild(tabHwnd, focused)))
                     {
                         activeTabDoc = w.Document;
                         break;
@@ -112,7 +121,7 @@ internal static class ShellSelection
                 catch { /* window vanished mid-enumeration */ }
             }
 
-            // Single match (no tabs, or pre-Win11) → no visibility test needed.
+            // Single match (no tabs, or pre-Win11) → no active-tab test needed.
             dynamic? doc = activeTabDoc ?? (matches == 1 ? soleMatchDoc : null);
             if (doc is null) return result;
 

@@ -82,6 +82,19 @@ public partial class App : System.Windows.Application
         Logger.Init("App");
         Logger.Info($"FootNote {typeof(App).Assembly.GetName().Version?.ToString(3)} starting from {InstallHelper.ExePath}");
         if (migratedFolders) Logger.Info("migrated local data from a previous FileTag install");
+
+        // Without this, an unhandled exception anywhere just kills the process
+        // with zero trace — exactly what made a real "why did it stop running"
+        // report undiagnosable earlier. Always logs, no FOOTNOTE_DEBUG needed.
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+            Logger.Error($"FATAL (non-UI thread): {args.ExceptionObject}");
+        DispatcherUnhandledException += (_, args) =>
+        {
+            Logger.Error($"FATAL (UI thread): {args.Exception}");
+            // Let it keep crashing (don't set args.Handled = true) — a logged
+            // crash that still surfaces is safer than one silently swallowed
+            // into a half-broken running state.
+        };
         UninstallRunner.CancelPendingDeletionHere();
         ListenForExitRequests(); // lets Setup update in place with a graceful stop
 
