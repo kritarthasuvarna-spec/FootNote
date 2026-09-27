@@ -3,7 +3,22 @@
 Record of what was actually implemented, tested, fixed, or deferred per
 release. User-facing notes live in `FootNote.App/Assets/PatchNotes.json`.
 
-## 1.3.0 — 2026-09-25
+## 1.3.0 — 2026-09-27
+- Fixed a real bug found in live testing: with more than one Explorer tab
+  open (normal on Win11), the overlay bar could fail to show an existing
+  note, and the hotkey could miss the actually-selected file entirely.
+  Root cause: `ShellSelection.GetSelectedPaths` picked the "active" tab
+  via `IsWindowVisible` on each tab's shell-view HWND, but Windows 11
+  keeps every open tab's pane `WS_VISIBLE` at the same time — only
+  z-order distinguishes the one actually in view, so the check couldn't
+  tell tabs apart and effectively picked an arbitrary one. Confirmed live
+  against the real `Shell.Application` COM object with 3 tabs open.
+  Fixed by matching each tab's HWND against the window's actual focused
+  control (`GetGUIThreadInfo`) instead.
+- Added `AppDomain.UnhandledException`/`DispatcherUnhandledException`
+  logging (`Logger.Error`, always on, no `FOOTNOTE_DEBUG` flag needed) —
+  previously an unhandled exception anywhere silently killed the process
+  with no trace at all.
 - **New: search all notes.** A second global hotkey (default
   Ctrl+Shift+Alt+N, independently remappable in Settings) opens a floating
   search box. Enter runs the search over every live note's text and
