@@ -1,6 +1,6 @@
 # FootNote — Product Requirements Document
 
-**Version covered:** 1.3.1 (GitHub, built and ready, not yet published) / MSIX identity 1.3.2.0 (Microsoft Store, built and ready, not yet submitted); live today: GitHub 1.3.0, Store 1.3.0.0
+**Version covered:** 1.3.1 (GitHub, built and ready, not yet published) / MSIX identity 1.3.2.0 (Microsoft Store, built and ready, not yet submitted); live today: GitHub 1.3.0, Store 1.3.1.0 (Submission 5 with 1.3.2.0 staged)
 **Date:** 2026-10-03
 **Status:** Beta — feature-complete, used daily by one person on one machine, no crash telemetry yet
 
@@ -72,7 +72,7 @@ Pricing, availability, and age rating in Partner Center: Free base app, USD, all
 ## 5. Distribution channels (state as of 2026-09-27)
 
 - **GitHub Releases** (`kritarthasuvarna-spec/FootNote`, public, MIT licensed): **v1.3.0 is live**. **v1.3.1 is built and ready** (installer and portable zip in `dist/Release_1.3.1/`, release notes prepared) but not yet published.
-- **Microsoft Store** ("Footnote: Comments for Files"): **v1.3.0.0 is currently live**, but that package predates the Explorer multi-tab selection fix. A newer package, **MSIX identity 1.3.2.0** (app 1.3.1), is built and ready in `dist/Release_1.3.1/`. It replaces the older 1.3.1.0 package that was staged in Submission 4. Not yet uploaded or submitted for certification. This section goes stale the moment that happens; treat the Partner Center dashboard as the source of truth for exact live status.
+- **Microsoft Store** ("Footnote: Comments for Files"): **MSIX identity 1.3.1.0 (Submission 4) is currently live**. It has the first Explorer multi-tab fix but not the focus-gap fix or the stray-copy protection. **MSIX identity 1.3.2.0** (app 1.3.1) is uploaded, validated and saved in **Submission 5** with the updated listing text, waiting only for "Submit for certification". This section goes stale the moment that happens; treat the Partner Center dashboard as the source of truth for exact live status.
 - The GitHub build's own version number and the Store MSIX identity version are intentionally independent tracks (established convention, see `docs/Store_Submission_Report_2026-09-07.md`) — they're kept numerically aligned when a release covers both channels, but nothing requires that.
 
 ---
