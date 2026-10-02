@@ -1,9 +1,9 @@
 [
   { "version": "1.3.1", "notes": [
-    "Fixed: a note could still fail to show with several Explorer tabs open if the address bar or search box had focus.",
-    "Fixed: running an extra or older copy of FootNote could silently take over the Start Menu shortcut and startup entry. Your installed copy now stays in charge." ] },
+    "Fixed: with several Explorer tabs open, a note could fail to show if the address bar or search box had focus.",
+    "Fixed: running an extra or older copy of FootNote could take over your Start Menu shortcut and startup entry. Your installed copy now stays in charge." ] },
   { "version": "1.3.0", "notes": [
-    "New: search all your notes at once. Press Ctrl+Shift+Alt+N (remappable in Settings) to open a search box — find a note by its text or the file's name, then jump straight to it in Explorer.",
+    "New: search all your notes at once. Press Ctrl+Shift+Alt+N (remappable in Settings) to open a search box, find a note by its text or the file's name, then jump straight to it in Explorer.",
     "Fixed: notes on folders sometimes didn't show up again after being saved.",
     "Fixed: with more than one Explorer tab open, a note could fail to show, or the hotkey could miss the file you actually had selected." ] },
   { "version": "1.2.0", "notes": [

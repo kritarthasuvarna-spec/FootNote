@@ -1,3 +1,6 @@
+> **Superseded** — see `docs/PRD.md` for the current product state
+> (v1.3.0+, Pro/Store tiers, search feature). Kept here for history.
+
 # FootNote — What's In The Build (v1.2.0)
 
 ## What it does
