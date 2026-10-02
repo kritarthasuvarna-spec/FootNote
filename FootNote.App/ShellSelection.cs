@@ -91,6 +91,8 @@ internal static class ShellSelection
             long target = explorerHwnd.ToInt64();
             dynamic? activeTabDoc = null;
             dynamic? soleMatchDoc = null;
+            dynamic? topmostTabDoc = null;
+            int topmostZ = int.MaxValue;
             int matches = 0;
 
             // Win11 tabbed Explorer keeps every open tab's shell-view pane
@@ -117,12 +119,21 @@ internal static class ShellSelection
                         activeTabDoc = w.Document;
                         break;
                     }
+
+                    // Remember the topmost tab pane too: focus can sit outside the
+                    // file list (address bar, search box, nav pane), and the
+                    // frontmost pane in z-order is still the tab being looked at.
+                    if (tabHwnd != IntPtr.Zero)
+                    {
+                        int z = NativeMethods.ZIndexAmongSiblings(tabHwnd);
+                        if (z < topmostZ) { topmostZ = z; topmostTabDoc = w.Document; }
+                    }
                 }
                 catch { /* window vanished mid-enumeration */ }
             }
 
             // Single match (no tabs, or pre-Win11) → no active-tab test needed.
-            dynamic? doc = activeTabDoc ?? (matches == 1 ? soleMatchDoc : null);
+            dynamic? doc = activeTabDoc ?? (matches == 1 ? soleMatchDoc : topmostTabDoc);
             if (doc is null) return result;
 
             dynamic items = doc.SelectedItems();

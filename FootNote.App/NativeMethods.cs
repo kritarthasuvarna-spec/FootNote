@@ -53,6 +53,25 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     public static extern bool IsChild(IntPtr hWndParent, IntPtr hWnd);
 
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetParent(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+    public const uint GW_HWNDNEXT = 2;
+    public const uint GW_CHILD = 5;
+
+    /// <summary>Position of hwnd among its parent's children, 0 = topmost in z-order.</summary>
+    public static int ZIndexAmongSiblings(IntPtr hwnd)
+    {
+        IntPtr parent = GetParent(hwnd);
+        if (parent == IntPtr.Zero) return int.MaxValue;
+        int idx = 0;
+        for (IntPtr c = GetWindow(parent, GW_CHILD); c != IntPtr.Zero; c = GetWindow(c, GW_HWNDNEXT), idx++)
+            if (c == hwnd) return idx;
+        return int.MaxValue;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     public struct GUITHREADINFO
     {

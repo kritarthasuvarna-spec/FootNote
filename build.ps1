@@ -14,7 +14,7 @@
 #   dist\_work\           <- transient staging, always wiped at the start of a build
 #   dist\_archive\        <- old artifacts from before this layout existed
 param(
-    [string]$Version = "1.3.0",
+    [string]$Version = "1.3.1",
     [ValidateSet("Free", "Pro")][string]$Tier = "Free",
     [ValidateSet("Owner")][string]$Channel = "Owner"
 )

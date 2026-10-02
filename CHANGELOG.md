@@ -3,6 +3,24 @@
 Record of what was actually implemented, tested, fixed, or deferred per
 release. User-facing notes live in `FootNote.App/Assets/PatchNotes.json`.
 
+## 1.3.1 — 2026-10-03
+- Found via a recurring "noted file doesn't show" report: the Start Menu
+  shortcut pointed at a stale 1.2.0 test copy, because
+  `InstallHelper.RegisterAll` rewrote the shortcut, Run key and Apps &
+  Features entry to wherever the *currently running* exe lived ("last
+  launched wins"). Any stray copy hijacked the registration. Now
+  `ShouldClaimRegistration` only lets a copy register if nothing valid is
+  registered, the registered install is gone, or it IS the registered
+  copy; `RegisterAll` returns whether it claimed, and a non-owning copy
+  logs a warning and shows a "separate copy" balloon instead of the
+  misleading "now installed at" one.
+- `ShellSelection.GetSelectedPaths`: when keyboard focus is outside every
+  tab's file list (address bar, search box, nav pane) the 1.3.0 focus
+  match found no tab and returned nothing. Added a fallback to the tab
+  pane that is topmost in z-order among its siblings
+  (`NativeMethods.ZIndexAmongSiblings`).
+- Store MSIX identity 1.3.2.0 (1.3.1.0 was already staged as Submission 4).
+
 ## 1.3.0 — 2026-09-27
 - Fixed a real bug found in live testing: with more than one Explorer tab
   open (normal on Win11), the overlay bar could fail to show an existing

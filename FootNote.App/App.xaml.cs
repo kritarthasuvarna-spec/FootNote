@@ -103,7 +103,9 @@ public partial class App : System.Windows.Application
         // so the user gets visible feedback that "running the exe" worked.
         string? previousLocation = InstallHelper.ReadRegisteredLocation();
         string currentLocation = Path.GetDirectoryName(InstallHelper.ExePath)!;
-        InstallHelper.RegisterAll(_index.StartWithWindows);
+        bool ownsRegistration = InstallHelper.RegisterAll(_index.StartWithWindows);
+        if (!ownsRegistration)
+            Logger.Warn($"running from a non-registered copy ({currentLocation}); registered install at {previousLocation} left untouched");
         SettingsService.Instance.Save(); // materialize defaults on first run
 
         _bar = new OverlayBar();
@@ -142,6 +144,11 @@ public partial class App : System.Windows.Application
             // A balloon is too easy to miss — show the interactive tutorial.
             OpenTutorial();
             _index.FirstRunShown = true;
+        }
+        else if (!ownsRegistration)
+        {
+            _tray.ShowBalloon("FootNote is running",
+                $"This is a separate copy ({currentLocation}); your installed copy stays registered for startup.");
         }
         else if (!string.Equals(previousLocation, currentLocation, StringComparison.OrdinalIgnoreCase))
         {

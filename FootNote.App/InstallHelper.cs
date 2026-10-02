@@ -34,17 +34,37 @@ internal static class InstallHelper
     public static string StartMenuShortcutPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.Programs), "FootNote.lnk");
 
-    public static void RegisterAll(bool startWithWindows)
+    /// <summary>Returns true if this copy owns (and so just refreshed) the registration.</summary>
+    public static bool RegisterAll(bool startWithWindows)
     {
         try
         {
+            if (MsixEnvironment.IsPackaged)
+            {
+                SetStartup(startWithWindows);
+                return true; // MSIX already owns the Apps & Features entry and Start Menu tile
+            }
+            if (!ShouldClaimRegistration()) return false;
             SetStartup(startWithWindows);
-            if (MsixEnvironment.IsPackaged) return; // MSIX already owns the Apps & Features entry and Start Menu tile
             WriteUninstallEntry();
             CreateStartMenuShortcut();
             RegisterSidecarIcon();
+            return true;
         }
-        catch { /* registry unavailable — app still functions this session */ }
+        catch { return false; /* registry unavailable — app still functions this session */ }
+    }
+
+    /// <summary>A stray copy (an old test folder, a downloaded zip) must not repoint the
+    /// shortcut, startup entry and uninstall entry away from the real install. Claim the
+    /// registration only if nothing valid is registered, or this copy is the registered one.</summary>
+    private static bool ShouldClaimRegistration()
+    {
+        string? registered = ReadRegisteredLocation();
+        if (string.IsNullOrEmpty(registered)) return true;
+        if (!File.Exists(Path.Combine(registered, "FootNote.App.exe"))) return true; // registered install is gone (moved/deleted)
+
+        static string Norm(string p) => Path.GetFullPath(p).TrimEnd('\\', '/');
+        return string.Equals(Norm(registered), Norm(Path.GetDirectoryName(ExePath)!), StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Gives .footnote sidecar files the app's own icon in Explorer
